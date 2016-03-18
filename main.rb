@@ -15,7 +15,7 @@ def create_plan_dialog
   amount = ask_string('Amount (in cents)')
   interval_question = 'Plan Interval'
   interval_choices = ['month', 'year']
-  interval = ask_choice(interval_question, interval_choices)
+  interval = ask_single_choice(interval_question, interval_choices)
   environment = ask_environment
 
   create_plan_in_stripe(plan_id, plan_name, amount, interval, currency, environment)
