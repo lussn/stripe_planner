@@ -16,9 +16,7 @@ def create_plan_dialog
   interval_question = 'Plan Interval'
   interval_choices = ['month', 'year']
   interval = ask_choice(interval_question, interval_choices)
-  environment_question = 'Environment'
-  environment_choices = get_environments
-  environment = ask_choice(environment_question, environment_choices)
+  environment = ask_environment
   create_plan_in_stripe(plan_id, plan_name, amount, interval, currency, environment)
 end
 
@@ -36,7 +34,6 @@ end
 
 def validate_environments
   environments_array = get_environments
-
   environments_array.map{|environment| get_api_key_from_environment(environment)}
 end
 
@@ -64,6 +61,12 @@ def ask_choice(question, possible_answers)
   choices[choice]
 end
 
+def ask_environment
+  environment_question = 'Environment'
+  environment_choices = get_environments
+  ask_choice(environment_question, environment_choices)
+end
+
 def ask_string(question, possible_answers = {})
   aux = possible_answers.map { |k, v| "#{k} - #{v}" }.join("\n")
 
@@ -84,6 +87,7 @@ end
 
 def create_plan_in_stripe(id, name, amount, interval, currency, environment)
   puts "Gathered required information, creating plan in stripe..."
+
   set_api_key_for_environment(environment)
 
   Stripe::Plan.create(
@@ -97,11 +101,13 @@ def create_plan_in_stripe(id, name, amount, interval, currency, environment)
   puts "Done :D"
 end
 
-def list_plans_in_environment(environment)
-  puts "\nPlans available in %s:" % environment
+def list_plans_in_environment
+  environment = ask_environment
 
+  puts "\nPlans available in #{environment}:"
   set_api_key_for_environment(environment)
-  stripe_plans = Stripe::Plan.all.each{|environment| puts "- %s" % environment.id}
+
+  Stripe::Plan.all.each{|plan| puts "- #{plan.id}"}
 end
 
 def set_api_key_for_environment(environment)
@@ -115,13 +121,11 @@ def main
 
   action = ask_choice(question, answers)
 
-
-  if action == 'Create a new plan'
-    create_plan_dialog
-  elsif action == 'List available environments' 
-    list_environments
-  else
-    puts "Not implemented yet :("
+  case action
+    when 'Create a new plan' then create_plan_dialog
+    when 'List available environments' then list_environments
+    when 'List available plans in a given environment' then list_plans_in_environment
+    else "Not implemented yet :("
   end
 end
 
