@@ -1,0 +1,2 @@
+:question: 'What would you like to do?'
+:options: ['Crate a new plan', 'Copy an existing plan to another environment', 'List available environments', 'List available plans in a given environment']
