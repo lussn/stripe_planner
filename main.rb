@@ -52,12 +52,12 @@ def ask_choice(question, range, possible_answers)
   choices = Hash[range.zip possible_answers]
   numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
-  choice = ask(
+  choice_index = ask(
     "%s\n%s" % [question, numerated_choices],
     Integer
   ) { |q| q.in = range}
 
-  choices[choice]
+  choices[choice_index]
 end
 
 def ask_single_choice(question, possible_answers)
@@ -121,12 +121,15 @@ def create_plan_in_stripe(id, name, amount, interval, currency, environments)
 end
 
 def list_plans_in_environment
-  environment = ask_environment
+  environments = ask_environment
 
-  puts "\nPlans available in #{environment}:"
-  set_api_key_for_environment(environment)
+  environments.each do |environment|
+    puts "\nPlans available in #{environment}:"
+    set_api_key_for_environment(environment)
 
-  Stripe::Plan.all.each{|plan| puts "- #{plan.id}"}
+    Stripe::Plan.all.each{|plan| puts "- #{plan.id}"}
+  end
+
 end
 
 def set_api_key_for_environment(environment)
