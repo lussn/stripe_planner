@@ -26,7 +26,7 @@ def create_plan_dialog
 end
 
 def list_environments
-  environments = ENV['STRIPE_PLANS']
+  environments = ENV['STRIPE_ENVIRONMENTS']
   environments_array = environments.split(',')
   
   puts "Environments available:"
@@ -34,7 +34,7 @@ def list_environments
 end
 
 def validate_environments
-  environments = ENV['STRIPE_PLANS']
+  environments = ENV['STRIPE_ENVIRONMENTS']
   if not environments
     puts "Expecting a comma separated list of environments, but not found :("
     return
