@@ -16,26 +16,26 @@ def create_plan_dialog
   interval_question = 'Plan Interval'
   interval_choices = ['month', 'year']
   interval = ask_choice(interval_question, interval_choices)
-
-  create_plan_in_stripe(plan_id, plan_name, amount, interval, currency)
+  environment_question = 'Environment'
+  environment_choices = get_environments
+  environment = ask_choice(environment_question, environment_choices)
+  create_plan_in_stripe(plan_id, plan_name, amount, interval, currency, environment)
 end
 
 def list_environments
-  environments = ENV['STRIPE_ENVIRONMENTS']
-  environments_array = environments.split(',')
-  
+  environments_array = get_environments
   puts "Environments available:"
   puts environments_array
 end
 
-def validate_environments
+def get_environments
   environments = ENV['STRIPE_ENVIRONMENTS']
-  if not environments
-    puts "Expecting a comma separated list of environments, but not found :("
-    return
-  end
+  raise "Expecting a comma separated list of environments, but not found :(" unless environments
+  environments.split(',')
+end
 
-  environments_array = environments.split(',')
+def validate_environments
+  environments_array = get_environments
 
   environments_array.map{|environment| get_api_key_from_environment(environment)}
 end
@@ -82,9 +82,10 @@ def ask_int(question, possible_answers)
   ) { |q| q.validate = /\d+/ }
 end
 
-def create_plan_in_stripe(id, name, amount, interval, currency)
+def create_plan_in_stripe(id, name, amount, interval, currency, environment)
   puts "Gathered required information, creating plan in stripe..."
-  
+  set_api_key_for_environment(environment)
+
   Stripe::Plan.create(
     'id' => id,
     'name' => name,
