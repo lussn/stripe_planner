@@ -1,6 +1,8 @@
 require 'highline/import'
 require 'stripe'
 require 'dotenv'
+require 'yaml'
+
 
 Dotenv.load
 
@@ -11,16 +13,9 @@ def create_plan_dialog
   plan_id = ask_string('Plan id:')
   currency = ask_string('Currency:')
   amount = ask_string('Amount (in cents)')
-  interval = ask_choice(
-    'Plan Interval',
-    {
-      1 => 'month',
-      2 => 'year'
-    }
-  )
-  environments = ask_choice(
-    'Environment',
-  )
+  interval_question = 'Plan Interval'
+  interval_choices = ['month', 'year']
+  interval = ask_choice(interval_question, interval_choices)
 
   create_plan_in_stripe(plan_id, plan_name, amount, interval, currency)
 end
@@ -56,14 +51,17 @@ def get_api_key_from_environment(environment)
 end
 
 def ask_choice(question, possible_answers)
-  aux = possible_answers.map { |k, v| "#{k} - #{v}" }.join("\n")
+  range = (1..possible_answers.length).to_a
+  choices = Hash[range.zip possible_answers]
+
+  numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice = ask(
-    question + "\n" + aux,
+    "%s\n%s" % [question, numerated_choices],
     Integer
-  ) { |q| q.in = 1..possible_answers.length }
+  ) { |q| q.in = range}
 
-  possible_answers[choice]
+  choices[choice]
 end
 
 def ask_string(question, possible_answers = {})
@@ -111,16 +109,11 @@ end
 
 def main
   validate_environments
+  question = 'What would you like to do?'
+  answers = ['Create a new plan', 'Copy an existing plan to another environment', 'List available environments', 'List available plans in a given environment']
 
-  action = ask_choice(
-    'What would you like to do?',
-    {
-      1 => 'Create a new plan',
-      2 => 'Copy an existing plan to another environment',
-      3 => 'List available environments',
-      4 => 'List available plans in a given environment'
-    }
-  )
+  action = ask_choice(question, answers)
+
 
   if action == 'Create a new plan'
     create_plan_dialog
