@@ -17,6 +17,7 @@ def create_plan_dialog
   interval_choices = ['month', 'year']
   interval = ask_choice(interval_question, interval_choices)
   environment = ask_environment
+
   create_plan_in_stripe(plan_id, plan_name, amount, interval, currency, environment)
 end
 
@@ -47,10 +48,8 @@ def get_api_key_from_environment(environment)
   return ENV[environment_variable_key]
 end
 
-def ask_choice(question, possible_answers)
-  range = (1..possible_answers.length).to_a
+def ask_choice(question, range, possible_answers)
   choices = Hash[range.zip possible_answers]
-
   numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice = ask(
@@ -61,10 +60,29 @@ def ask_choice(question, possible_answers)
   choices[choice]
 end
 
+def ask_single_choice(question, possible_answers)
+  range = (1..possible_answers.length).to_a
+
+  ask_choice(question, range, possible_answers)
+end
+
+def ask_choice_with_all(question, original_possible_answers)
+  range = (0..original_possible_answers.length).to_a
+  possible_answers = ['all'] + original_possible_answers
+  
+  choice = ask_choice(question, range, possible_answers)
+
+  if choice == 'all'
+    original_possible_answers
+  else
+    [choice]
+  end
+end
+
 def ask_environment
   environment_question = 'Environment'
   environment_choices = get_environments
-  ask_choice(environment_question, environment_choices)
+  ask_choice_with_all(environment_question, environment_choices)
 end
 
 def ask_string(question, possible_answers = {})
@@ -119,7 +137,7 @@ def main
   question = 'What would you like to do?'
   answers = ['Create a new plan', 'Copy an existing plan to another environment', 'List available environments', 'List available plans in a given environment']
 
-  action = ask_choice(question, answers)
+  action = ask_single_choice(question, answers)
 
   case action
     when 'Create a new plan' then create_plan_dialog
