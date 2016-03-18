@@ -16,9 +16,9 @@ def create_plan_dialog
   interval_question = 'Plan Interval'
   interval_choices = ['month', 'year']
   interval = ask_single_choice(interval_question, interval_choices)
-  environment = ask_environment
+  environments = ask_environment
 
-  create_plan_in_stripe(plan_id, plan_name, amount, interval, currency, environment)
+  create_plan_in_stripe(plan_id, plan_name, amount, interval, currency, environments)
 end
 
 def list_environments
@@ -103,19 +103,20 @@ def ask_int(question, possible_answers)
   ) { |q| q.validate = /\d+/ }
 end
 
-def create_plan_in_stripe(id, name, amount, interval, currency, environment)
+def create_plan_in_stripe(id, name, amount, interval, currency, environments)
   puts "Gathered required information, creating plan in stripe..."
 
-  set_api_key_for_environment(environment)
+  environments.each do |environment|
+    set_api_key_for_environment(environment)
 
-  Stripe::Plan.create(
-    'id' => id,
-    'name' => name,
-    'amount' => amount,
-    'interval' => interval,
-    'currency' => currency,
-  )
-
+    Stripe::Plan.create(
+        'id' => id,
+        'name' => name,
+        'amount' => amount,
+        'interval' => interval,
+        'currency' => currency,
+    )
+  end
   puts "Done :D"
 end
 
