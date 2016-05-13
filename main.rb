@@ -48,8 +48,8 @@ def ask_choice(question, range, possible_answers)
   numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice_index = ask(
-   "#{question}\n#{numerated_choices}",
-   Integer
+    "#{question}\n#{numerated_choices}",
+    Integer
   ) { |q| q.in = range }
 
   choices[choice_index]
@@ -104,11 +104,11 @@ def create_plan_in_stripe(id, name, amount, interval, currency, environments)
     set_api_key_for_environment(environment)
 
     Stripe::Plan.create(
-        'id' => id,
-        'name' => name,
-        'amount' => amount,
-        'interval' => interval,
-        'currency' => currency
+      'id' => id,
+      'name' => name,
+      'amount' => amount,
+      'interval' => interval,
+      'currency' => currency
     )
   end
   puts 'Done :D'
@@ -137,10 +137,10 @@ def main
   action = ask_single_choice(question, answers)
 
   case action
-    when 'Create a new plan' then create_plan_dialog
-    when 'List available environments' then list_environments
-    when 'List available plans in a given environment' then list_plans_in_environment
-    else 'Not implemented yet :('
+  when 'Create a new plan' then create_plan_dialog
+  when 'List available environments' then list_environments
+  when 'List available plans in a given environment' then list_plans_in_environment
+  else 'Not implemented yet :('
   end
 end
 
