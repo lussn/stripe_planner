@@ -38,8 +38,9 @@ def validate_environments
 end
 
 def get_api_key_from_environment(environment)
-  environment_variable_key = 'STRIPE_API_KEY_%s' % environment.upcase
-  raise 'no api key was found for environment: %' % environment unless ENV[environment_variable_key]
+  environment_variable_key = ENV["STRIPE_API_KEY_#{environment.upcase}"]
+  raise "no api key was found for environment: #{environment}" unless environment_variable_key
+  environment_variable_key
 end
 
 def ask_choice(question, range, possible_answers)
