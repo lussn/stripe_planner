@@ -34,7 +34,7 @@ end
 
 def validate_environments
   environments_array = get_environments
-  environments_array.map{|environment| get_api_key_from_environment(environment)}
+  environments_array.map { |environment| get_api_key_from_environment(environment) }
 end
 
 def get_api_key_from_environment(environment)
@@ -53,7 +53,7 @@ def ask_choice(question, range, possible_answers)
   choice_index = ask(
     "%s\n%s" % [question, numerated_choices],
     Integer
-  ) { |q| q.in = range}
+  ) { |q| q.in = range }
 
   choices[choice_index]
 end
@@ -124,7 +124,7 @@ def list_plans_in_environment
     puts "\nPlans available in #{environment}:"
     set_api_key_for_environment(environment)
 
-    Stripe::Plan.all.each{|plan| puts "- #{plan.id}"}
+    Stripe::Plan.all.each { |plan| puts "- #{plan.id}" }
   end
 end
 
