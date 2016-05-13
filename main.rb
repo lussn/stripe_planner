@@ -48,8 +48,8 @@ def ask_choice(question, range, possible_answers)
   numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice_index = ask(
-    "%s\n%s" % [question, numerated_choices],
-    Integer
+   "#{question}\n#{numerated_choices}",
+   Integer
   ) { |q| q.in = range }
 
   choices[choice_index]
