@@ -39,7 +39,6 @@ end
 
 def get_api_key_from_environment(environment)
   environment_variable_key = 'STRIPE_API_KEY_%s' % environment.upcase
-  
   if not ENV[environment_variable_key]
     raise "no api key was found for environment: %s" % environment
   end
@@ -68,7 +67,6 @@ end
 def ask_choice_with_all(question, original_possible_answers)
   range = (0..original_possible_answers.length).to_a
   possible_answers = ['all'] + original_possible_answers
-  
   choice = ask_choice(question, range, possible_answers)
 
   if choice == 'all'
