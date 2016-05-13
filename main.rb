@@ -13,7 +13,7 @@ def create_plan_dialog
   currency = ask_string('Currency:')
   amount = ask_string('Amount (in cents)')
   interval_question = 'Plan Interval'
-  interval_choices = ['month', 'year']
+  interval_choices = %w(month year)
   interval = ask_single_choice(interval_question, interval_choices)
   environments = ask_environment
 
