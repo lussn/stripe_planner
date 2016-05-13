@@ -111,7 +111,7 @@ def create_plan_in_stripe(id, name, amount, interval, currency, environments)
         'name' => name,
         'amount' => amount,
         'interval' => interval,
-        'currency' => currency,
+        'currency' => currency
     )
   end
   puts "Done :D"
