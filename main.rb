@@ -128,7 +128,6 @@ def list_plans_in_environment
 
     Stripe::Plan.all.each{|plan| puts "- #{plan.id}"}
   end
-
 end
 
 def set_api_key_for_environment(environment)
