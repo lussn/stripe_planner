@@ -21,23 +21,23 @@ def create_plan_dialog
 end
 
 def list_environments
-  environments_array = get_environments
+  environments_array = environments
   puts 'Environments available:'
   puts environments_array
 end
 
-def get_environments
+def environments
   environments = ENV['STRIPE_ENVIRONMENTS']
   raise 'Expecting a comma separated list of environments, but not found :(' unless environments
   environments.split(',')
 end
 
 def validate_environments
-  environments_array = get_environments
-  environments_array.map { |environment| get_api_key_from_environment(environment) }
+  environments_array = environments
+  environments_array.map { |environment| api_key_from_environment(environment) }
 end
 
-def get_api_key_from_environment(environment)
+def api_key_from_environment(environment)
   environment_variable_key = ENV["STRIPE_API_KEY_#{environment.upcase}"]
   raise "no api key was found for environment: #{environment}" unless environment_variable_key
   environment_variable_key
@@ -75,7 +75,7 @@ end
 
 def ask_environment
   environment_question = 'Environment'
-  environment_choices = get_environments
+  environment_choices = environments
   ask_choice_with_all(environment_question, environment_choices)
 end
 
@@ -99,10 +99,8 @@ end
 
 def create_plan_in_stripe(id, name, amount, interval, currency, environments)
   puts 'Gathered required information, creating plan in stripe...'
-
   environments.each do |environment|
     set_api_key_for_environment(environment)
-
     Stripe::Plan.create(
       'id' => id,
       'name' => name,
@@ -126,7 +124,7 @@ def list_plans_in_environment
 end
 
 def set_api_key_for_environment(environment)
-  Stripe.api_key = get_api_key_from_environment(environment)
+  Stripe.api_key = api_key_from_environment(environment)
 end
 
 def main
