@@ -3,7 +3,6 @@ require 'stripe'
 require 'dotenv'
 require 'yaml'
 
-
 Dotenv.load
 
 def create_plan_dialog
