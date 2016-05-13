@@ -22,13 +22,13 @@ end
 
 def list_environments
   environments_array = get_environments
-  puts "Environments available:"
+  puts 'Environments available:'
   puts environments_array
 end
 
 def get_environments
   environments = ENV['STRIPE_ENVIRONMENTS']
-  raise "Expecting a comma separated list of environments, but not found :(" unless environments
+  raise 'Expecting a comma separated list of environments, but not found :(' unless environments
   environments.split(',')
 end
 
@@ -40,7 +40,7 @@ end
 def get_api_key_from_environment(environment)
   environment_variable_key = 'STRIPE_API_KEY_%s' % environment.upcase
   if not ENV[environment_variable_key]
-    raise "no api key was found for environment: %s" % environment
+    raise 'no api key was found for environment: %' % environment
   end
 
   return ENV[environment_variable_key]
@@ -101,7 +101,7 @@ def ask_int(question, possible_answers)
 end
 
 def create_plan_in_stripe(id, name, amount, interval, currency, environments)
-  puts "Gathered required information, creating plan in stripe..."
+  puts 'Gathered required information, creating plan in stripe...'
 
   environments.each do |environment|
     set_api_key_for_environment(environment)
@@ -114,7 +114,7 @@ def create_plan_in_stripe(id, name, amount, interval, currency, environments)
         'currency' => currency
     )
   end
-  puts "Done :D"
+  puts 'Done :D'
 end
 
 def list_plans_in_environment
@@ -143,7 +143,7 @@ def main
     when 'Create a new plan' then create_plan_dialog
     when 'List available environments' then list_environments
     when 'List available plans in a given environment' then list_plans_in_environment
-    else "Not implemented yet :("
+    else 'Not implemented yet :('
   end
 end
 
