@@ -43,44 +43,86 @@ def api_key_from_environment(environment)
   environment_variable_key
 end
 
-def ask_choice(question, range, possible_answers)
-  choices = Hash[range.zip possible_answers]
+def validate_multiple_choice_answer_in_range(answer, range)
+  matches_expression = answer =~ /(?:[1-9],)+[1-9]|^[\d]$/
+
+  answer.split(',').each do |number|
+    unless range.include? number.to_i
+      return false
+    end
+  end
+
+  matches_expression
+end
+
+def ask_choice(question, range, choices)
+  choices = Hash[range.zip choices]
   numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice_index = ask(
-    "#{question}\n#{numerated_choices}",
-    Integer
+      "#{question}\n#{numerated_choices}",
+      Integer
   ) { |q| q.in = range }
 
   choices[choice_index]
 end
 
-def ask_single_choice(question, possible_answers)
-  range = (1..possible_answers.length).to_a
+def ask_single_choice(question, possible_choices)
+  range = (1..possible_choices.length).to_a
 
-  ask_choice(question, range, possible_answers)
+  ask_choice(question, range, possible_choices)
 end
 
-def ask_choice_with_all(question, original_possible_answers)
-  range = (0..original_possible_answers.length).to_a
-  possible_answers = ['all'] + original_possible_answers
-  choice = ask_choice(question, range, possible_answers)
+def ask_single_choice_with_all(question, original_possible_choices)
+  range = (0..original_possible_choices.length).to_a
+  possible_choices = ['all'] + original_possible_choices
+  choice = ask_choice(question, range, possible_choices)
 
   if choice == 'all'
-    original_possible_answers
+    original_possible_choices
   else
     [choice]
+  end
+end
+
+def ask_multiple_choice(question, range, choices)
+  choices_hash = Hash[range.zip choices]
+  numerated_choices = choices_hash.map { |k, v| "#{k} - #{v}" }.join("\n")
+
+  choice_index = ask(
+      "%s\n%s" % [question, numerated_choices],
+      String
+  ) { |q| q.validate = lambda { |p| validate_multiple_choice_answer_in_range(p.to_s, range) } }
+
+  selected_choices = []
+
+  choice_index.split(',').each do |index|
+    selected_choices.push(choices_hash[index.to_i])
+  end
+
+  selected_choices
+end
+
+def ask_multiple_choices_with_all(question, original_choices)
+  range = (0..original_choices.length).to_a
+  possible_choices = ['all'] + original_choices
+  selected_choices = ask_multiple_choice(question, range, possible_choices)
+
+  if selected_choices == ['all']
+    original_choices
+  else
+    selected_choices
   end
 end
 
 def ask_environment
   environment_question = 'Environment'
   environment_choices = environments
-  ask_choice_with_all(environment_question, environment_choices)
+  ask_multiple_choices_with_all(environment_question, environment_choices)
 end
 
-def ask_string(question, possible_answers = {})
-  aux = possible_answers.map { |k, v| "#{k} - #{v}" }.join("\n")
+def ask_string(question, choices = {})
+  aux = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   ask(
     "\n" + question + "\n" + aux,
@@ -88,8 +130,8 @@ def ask_string(question, possible_answers = {})
   ) { |q| q.validate = /\w+/ }
 end
 
-def ask_int(question, possible_answers)
-  aux = possible_answers.map { |k, v| "#{k} - #{v}" }.join("\n")
+def ask_int(question, choices)
+  aux = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   ask(
     question + "\n" + aux,
@@ -116,7 +158,7 @@ def list_plans_in_environment
   environments = ask_environment
 
   environments.each do |environment|
-    puts "\nPlans available in #{environment}:"
+    puts "\nAvailable plans in #{environment}:"
     set_api_key_for_environment(environment)
 
     Stripe::Plan.all.each { |plan| puts "- #{plan.id}" }
@@ -129,10 +171,10 @@ end
 
 def main
   validate_environments
-  question = 'What would you like to do?'
-  answers = ['Create a new plan', 'Copy an existing plan to another environment', 'List available environments', 'List available plans in a given environment']
+  action_question = 'What would you like to do?'
+  action_choices = ['Create a new plan', 'Copy an existing plan to another environment', 'List available environments', 'List available plans in a given environment']
 
-  action = ask_single_choice(question, answers)
+  action = ask_single_choice(action_question, action_choices)
 
   case action
   when 'Create a new plan' then create_plan_dialog
