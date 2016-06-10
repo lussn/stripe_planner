@@ -3,7 +3,6 @@ require 'stripe'
 require 'dotenv'
 require 'yaml'
 
-
 Dotenv.load
 
 def create_plan_dialog
@@ -14,7 +13,7 @@ def create_plan_dialog
   currency = ask_string('Currency:')
   amount = ask_string('Amount (in cents)')
   interval_question = 'Plan Interval'
-  interval_choices = ['month', 'year']
+  interval_choices = %w(month year)
   interval = ask_single_choice(interval_question, interval_choices)
   environments = ask_environment
 
@@ -22,30 +21,26 @@ def create_plan_dialog
 end
 
 def list_environments
-  environments_array = get_environments
-  puts "Environments available:"
+  environments_array = environments
+  puts 'Environments available:'
   puts environments_array
 end
 
-def get_environments
+def environments
   environments = ENV['STRIPE_ENVIRONMENTS']
-  raise "Expecting a comma separated list of environments, but not found :(" unless environments
+  raise 'Expecting a comma separated list of environments, but not found :(' unless environments
   environments.split(',')
 end
 
 def validate_environments
-  environments_array = get_environments
-  environments_array.map{|environment| get_api_key_from_environment(environment)}
+  environments_array = environments
+  environments_array.map { |environment| api_key_from_environment(environment) }
 end
 
-def get_api_key_from_environment(environment)
-  environment_variable_key = 'STRIPE_API_KEY_%s' % environment.upcase
-  
-  if not ENV[environment_variable_key]
-    raise "no api key was found for environment: %s" % environment
-  end
-
-  return ENV[environment_variable_key]
+def api_key_from_environment(environment)
+  environment_variable_key = ENV["STRIPE_API_KEY_#{environment.upcase}"]
+  raise "no api key was found for environment: #{environment}" unless environment_variable_key
+  environment_variable_key
 end
 
 def ask_choice(question, range, possible_answers)
@@ -53,9 +48,9 @@ def ask_choice(question, range, possible_answers)
   numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice_index = ask(
-    "%s\n%s" % [question, numerated_choices],
+    "#{question}\n#{numerated_choices}",
     Integer
-  ) { |q| q.in = range}
+  ) { |q| q.in = range }
 
   choices[choice_index]
 end
@@ -69,7 +64,6 @@ end
 def ask_choice_with_all(question, original_possible_answers)
   range = (0..original_possible_answers.length).to_a
   possible_answers = ['all'] + original_possible_answers
-  
   choice = ask_choice(question, range, possible_answers)
 
   if choice == 'all'
@@ -81,7 +75,7 @@ end
 
 def ask_environment
   environment_question = 'Environment'
-  environment_choices = get_environments
+  environment_choices = environments
   ask_choice_with_all(environment_question, environment_choices)
 end
 
@@ -104,20 +98,18 @@ def ask_int(question, possible_answers)
 end
 
 def create_plan_in_stripe(id, name, amount, interval, currency, environments)
-  puts "Gathered required information, creating plan in stripe..."
-
+  puts 'Gathered required information, creating plan in stripe...'
   environments.each do |environment|
     set_api_key_for_environment(environment)
-
     Stripe::Plan.create(
-        'id' => id,
-        'name' => name,
-        'amount' => amount,
-        'interval' => interval,
-        'currency' => currency,
+      'id' => id,
+      'name' => name,
+      'amount' => amount,
+      'interval' => interval,
+      'currency' => currency
     )
   end
-  puts "Done :D"
+  puts 'Done :D'
 end
 
 def list_plans_in_environment
@@ -127,13 +119,12 @@ def list_plans_in_environment
     puts "\nPlans available in #{environment}:"
     set_api_key_for_environment(environment)
 
-    Stripe::Plan.all.each{|plan| puts "- #{plan.id}"}
+    Stripe::Plan.all.each { |plan| puts "- #{plan.id}" }
   end
-
 end
 
 def set_api_key_for_environment(environment)
-  Stripe.api_key = get_api_key_from_environment(environment)
+  Stripe.api_key = api_key_from_environment(environment)
 end
 
 def main
@@ -144,10 +135,10 @@ def main
   action = ask_single_choice(question, answers)
 
   case action
-    when 'Create a new plan' then create_plan_dialog
-    when 'List available environments' then list_environments
-    when 'List available plans in a given environment' then list_plans_in_environment
-    else "Not implemented yet :("
+  when 'Create a new plan' then create_plan_dialog
+  when 'List available environments' then list_environments
+  when 'List available plans in a given environment' then list_plans_in_environment
+  else 'Not implemented yet :('
   end
 end
 
