@@ -47,9 +47,7 @@ def validate_multiple_choice_answer_in_range(answer, range)
   matches_expression = answer =~ /(?:[1-9],)+[1-9]|^[\d]$/
 
   answer.split(',').each do |number|
-    unless range.include? number.to_i
-      return false
-    end
+    return false unless range.include? number.to_i
   end
 
   matches_expression
@@ -60,8 +58,8 @@ def ask_choice(question, range, choices)
   numerated_choices = choices.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice_index = ask(
-      "#{question}\n#{numerated_choices}",
-      Integer
+    "#{question}\n#{numerated_choices}",
+    Integer
   ) { |q| q.in = range }
 
   choices[choice_index]
@@ -90,9 +88,9 @@ def ask_multiple_choice(question, range, choices)
   numerated_choices = choices_hash.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice_index = ask(
-      "%s\n%s" % [question, numerated_choices],
-      String
-  ) { |q| q.validate = lambda { |p| validate_multiple_choice_answer_in_range(p.to_s, range) } }
+    format('%s\n%s', question, numerated_choices),
+    String
+  ) { |q| q.validate = ->(p) { validate_multiple_choice_answer_in_range(p.to_s, range) } }
 
   selected_choices = []
 
@@ -169,10 +167,18 @@ def set_api_key_for_environment(environment)
   Stripe.api_key = api_key_from_environment(environment)
 end
 
+def action_choices
+  [
+    'Create a new plan',
+    'Copy an existing plan to another environment',
+    'List available environments',
+    'List available plans in a given environment'
+  ]
+end
+
 def main
   validate_environments
   action_question = 'What would you like to do?'
-  action_choices = ['Create a new plan', 'Copy an existing plan to another environment', 'List available environments', 'List available plans in a given environment']
 
   action = ask_single_choice(action_question, action_choices)
 
