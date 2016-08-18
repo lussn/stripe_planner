@@ -88,7 +88,7 @@ def ask_multiple_choice(question, range, choices)
   numerated_choices = choices_hash.map { |k, v| "#{k} - #{v}" }.join("\n")
 
   choice_index = ask(
-    format('%s\n%s', question, numerated_choices),
+    format('%s%s', question, numerated_choices),
     String
   ) { |q| q.validate = ->(p) { validate_multiple_choice_answer_in_range(p.to_s, range) } }
 
@@ -114,7 +114,7 @@ def ask_multiple_choices_with_all(question, original_choices)
 end
 
 def ask_environment
-  environment_question = 'Environment'
+  environment_question = "Environment\n"
   environment_choices = environments
   ask_multiple_choices_with_all(environment_question, environment_choices)
 end
